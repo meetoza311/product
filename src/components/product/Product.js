@@ -25,7 +25,6 @@ const ProductDemo = (props) => {
     const context = useContext(MyContext);
 
     useEffect(() => {
-        console.log(props.item)
         setProductData(props.item);
     }, [props.item])
 
@@ -36,30 +35,51 @@ const ProductDemo = (props) => {
 
 
     const addToCartData = (product) => {
-        let arr = [...cartItems]
-        const existingItemIndex = arr.findIndex(item => item.id === product.id);
-
-        if (existingItemIndex !== -1) {
-            const updatedCart = arr;
-            console.log(updatedCart[existingItemIndex])
-            updatedCart[existingItemIndex].quantity++;
-            dispatch(addToCart(updatedCart));
-
+        const existingIndex = cartItems.findIndex(item => item.id === product.id);
+    
+        if (existingIndex !== -1) {
+            const updatedCartItems = [...cartItems];
+            updatedCartItems[existingIndex].quantity++;
+            updatedCartItems[existingIndex].subtotal = calculateOrderPrice(updatedCartItems[existingIndex]);
+            dispatch(addToCart(updatedCartItems));
         } else {
-            dispatch(addToCart([...arr, { ...product, quantity: 1 }]));
+            product.quantity = 1;
+            dispatch(addToCart([...cartItems, { ...product, subtotal: calculateOrderPrice(product) }]));
+        }
+    }
+    
+
+    const calculateOrderPrice = (Item) => {
+        return Number(Item.price) * Item.quantity;
+    };
+
+
+    const removeToCartData = (product) => {
+        const existingIndex = cartItems.findIndex(item => item.id === product.id);
+        if (existingIndex !== -1) {
+            const updatedCartItems = [...cartItems];
+            if (updatedCartItems[existingIndex].quantity > 1) {
+                updatedCartItems[existingIndex].quantity--;
+                updatedCartItems[existingIndex].subtotal = calculateOrderPrice(updatedCartItems[existingIndex]);
+            } else {
+                updatedCartItems.splice(existingIndex, 1);
+            }
+            dispatch(addToCart(updatedCartItems));
         }
     }
 
     useEffect(() => {
-        if(cartItems.length){
+        if (cartItems.length) {
             const existingItemIndex = cartItems.findIndex(item => item.id === productData?.id);
             if (existingItemIndex !== -1) {
                 setCart(cartItems[existingItemIndex])
+            }else{
+                setCart({}) 
             }
+        } else {
+            setCart({})
         }
-    }, [dispatch, cartItems,productData]);
-
-    console.log(cart,'ss',cartItems)
+    }, [dispatch, cartItems, productData]);
 
     return (
         <div className='productThumb' onClick={setProductCat}>
@@ -122,11 +142,11 @@ const ProductDemo = (props) => {
                         {
                             <div className='d-flex align-items-center justify-content-between mt-3 svg-icon-style'>
                                 <div className='remove'>
-                                    <RemoveCircleIcon />
+                                    <RemoveCircleIcon onClick={() => removeToCartData(productData)} style={{cursor:'pointer'}}/>
                                 </div>
                                 <div>{cart?.quantity || 0}</div>
                                 <div className='add'>
-                                    <AddCircleIcon onClick={() => addToCartData(productData)} />
+                                    <AddCircleIcon onClick={() => addToCartData(productData)} style={{cursor:'pointer'}}/>
                                 </div>
                             </div>
                         }

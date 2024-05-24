@@ -23,6 +23,8 @@ import menuDataJson from './menuData';
 import { CleaningServices, ConstructionOutlined } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { get_menuItem } from './Redux/Actions/main_action';
+import OrderPage from './pages/order';
+import OrderDetail from './pages/order/orderDetail';
 
 const MyContext = createContext();
 
@@ -54,6 +56,18 @@ function App() {
         setIsloading(false);
       }, 3000);
 
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   useEffect(() => {
@@ -154,6 +168,8 @@ function App() {
           {/* <Route exact={true} path="/cat/:id/:id" element={<Listing data={data.productData} single={false} />} /> */}
           <Route exact={true} path="/product/:id" element={<DetailsPage  />} />
           <Route exact={true} path="/cart" element={<Cart />} />
+          <Route exact={true} path="/order" element={<OrderPage />} />
+          <Route exact={true} path="/order/:id" element={<OrderDetail />} />
           <Route exact={true} path="/signIn" element={<SignIn />} />
           <Route exact={true} path="/signUp" element={<SignUp />} />
           <Route exact={true} path="/checkout" element={<Checkout />} />

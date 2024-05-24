@@ -1,74 +1,46 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import './style.css';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import Rating from '@mui/material/Rating';
 import { Button } from '@mui/material';
-import QuantityBox from '../../components/quantityBox';
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
-import { MyContext } from '../../App';
 import axios from 'axios';
 
 import { useNavigate } from 'react-router-dom';
 
 import { loadStripe } from '@stripe/stripe-js';
 import { useDispatch, useSelector } from 'react-redux';
-import { addToCart } from '../../Redux/Actions/main_action';
+import QuantityBox from '../../../components/quantityBox';
+import { MyContext } from '../../../App';
+import { addToCart } from '../../../Redux/Actions/main_action';
 
 const Cart = () => {
     // const [cartItems, setCartItems] = useState([])
     const context = useContext(MyContext);
     const history = useNavigate();
-    const { cartItems } = useSelector((store) => store.reducer)
+    const { cartItems, detailOrders } = useSelector((store) => store.reducer)
     const dispatch = useDispatch()
+    const [currentOrder, setCurrentOrder] = useState({})
+    let { id } = useParams();
 
     useEffect(() => {
-        //    if(context.isLogin!=="true"){
-        //     history("/signIn");
-        //    }else{
-        // setCartItems(context.cartItems);
-        //    }
-
-
         window.scrollTo(0, 0);
-
-    }, [context.cartItems])
-
+    }, [])
 
 
+    useEffect(() => {
+        window.scrollTo(0, 0)
 
+        detailOrders.length !== 0 &&
+            detailOrders.map((item, index) => {
+                if (parseInt(index + 1) == parseInt(id)) {
+                    setCurrentOrder(item);
+                }
+            })
+    }, [id, detailOrders]);
 
-
-
-
-    // const emptyCart = () => {
-    //     let response = null;
-    //     cartItems.length !== 0 &&
-    //         cartItems.map((item) => {
-    //             response = axios.delete(`http://localhost:5000/cartItems/${parseInt(item.id)}`);
-    //         })
-    //     if (response !== null) {
-    //         getCartData("http://localhost:5000/cartItems");
-    //     }
-
-    //     context.emptyCart();
-    // }
-
-
-    const updateCart = (items) => {
-        console.log(items)
-        // setCartItems(items)
-    }
-
-
-    const removeCart = (Id) => {
-        const updatedCartItems = cartItems.filter(item => item.id !== Id);
-        console.log(updatedCartItems)
-        dispatch(addToCart(updatedCartItems));
-    }
-
-
-
+    console.log(currentOrder, id, detailOrders, currentOrder?.orederList)
     return (
         <>
             {
@@ -96,8 +68,8 @@ const Cart = () => {
                         <div className='col-md-8'>
                             <div className='d-flex align-items-center w-100'>
                                 <div className='left'>
-                                    <h1 className='hd mb-0'>Your Cart</h1>
-                                    <p>There are <span className='text-g'>{cartItems.length}</span> products in your cart</p>
+                                    <h1 className='hd mb-0'>Order Detail</h1>
+                                    {/* <p>There are <span className='text-g'>3</span> products in your cart</p> */}
                                 </div>
 
                             </div>
@@ -113,14 +85,14 @@ const Cart = () => {
                                                 <th>Unit Price</th>
                                                 <th>Quantity</th>
                                                 <th>Subtotal</th>
-                                                <th>Remove</th>
+                                                {/* <th>Remove</th> */}
                                             </tr>
                                         </thead>
 
                                         <tbody>
                                             {
-                                                cartItems.length !== 0 &&
-                                                cartItems.map((item, index) => {
+                                                currentOrder?.orederList && currentOrder?.orederList.length !== 0 &&
+                                                currentOrder?.orederList.map((item, index) => {
                                                     return (
                                                         <tr>
                                                             <td width={"50%"}>
@@ -144,19 +116,19 @@ const Cart = () => {
 
                                                             <td width="20%"><span>Rs:  {parseInt(item.price.split(",").join(""))}</span></td>
 
-                                                            <td>
-                                                                <QuantityBox item={item} index={index} updateCart={updateCart} />
+                                                            <td width="20%"><span>{item.quantity}</span>
+                                                                {/* <QuantityBox item={item} cartItems={cartItems} index={index} updateCart={updateCart} /> */}
                                                             </td>
 
                                                             <td>
                                                                 <span className='text-g'>Rs. {parseInt(item.price.split(",").join("")) * parseInt(item.quantity)}</span>
                                                             </td>
 
-                                                            <td align='center'>
+                                                            {/* <td align='center'>
                                                                 <span className='cursor'
                                                                     onClick={() => removeCart(item.id)}
-                                                                ><DeleteOutlineOutlinedIcon fontSize='large' style={{color:'#ff0000b5'}}/></span>
-                                                            </td>
+                                                                ><DeleteOutlineOutlinedIcon fontSize='large' style={{ color: 'ff0000b5' }} /></span>
+                                                            </td> */}
 
                                                         </tr>
                                                     )
@@ -173,23 +145,11 @@ const Cart = () => {
                             <br />
 
 
-                            <div className='d-flex align-items-center'>
-                                <Link to="/">
-                                    <Button className='btn-g'>
-                                        <KeyboardBackspaceIcon /> Continue Shopping</Button>
-                                </Link>
-                                {/* <Button className='btn-g ml-auto' onClick={updateCartData}>
-                    <RefreshIcon /> Update Cart</Button> */}
-
-
-                            </div>
-
-
                         </div>
 
                         <div className='col-md-4 cartRightBox'>
                             <div className='card p-4 '>
-                            <h3 className='text-center font-weight-bold'>Your Bill</h3>
+                                <h3 className='text-center font-weight-bold'>Payment Detail</h3>
                                 {/* <div className='d-flex align-items-center mb-4'>
                                     <h5 className='mb-0 text-light'>Subtotal</h5>
                                     <h3 className='ml-auto mb-0 font-weight-bold'><span className='text-g'>
@@ -201,11 +161,29 @@ const Cart = () => {
                                 </div> */}
 
                                 <div className='d-flex align-items-center mb-4'>
+                                    <h5 className='mb-0 text-light'>User Name</h5>
+                                    <h3 className='ml-auto mb-0 font-weight-bold'><span className='text-g'>
+                                        {
+                                            currentOrder?.name
+                                        }
+                                    </span></h3>
+                                </div>
+
+                                <div className='d-flex align-items-center mb-4'>
+                                    <h5 className='mb-0 text-light'>Phone Number</h5>
+                                    <h3 className='ml-auto mb-0 font-weight-bold'><span>
+                                        {
+                                            currentOrder?.phoneNumber
+                                        }
+                                    </span></h3>
+                                </div>
+
+                                <div className='d-flex align-items-center mb-4'>
                                     <h5 className='mb-0 text-light'>Quantity</h5>
                                     <h3 className='ml-auto mb-0 font-weight-bold'>
-                                    {
-                                            cartItems.length !== 0 &&
-                                            cartItems.map(item => parseInt(item.quantity)).reduce((total, value) => total + value, 0)
+                                        {
+                                            currentOrder?.orederList && currentOrder?.orederList.length !== 0 &&
+                                            currentOrder?.orederList.map(item => parseInt(item.quantity)).reduce((total, value) => total + value, 0)
                                         }
                                     </h3>
                                 </div>
@@ -221,24 +199,13 @@ const Cart = () => {
                                     <h5 className='mb-0 text-light'>Total</h5>
                                     <h3 className='ml-auto mb-0 font-weight-bold'><span className='text-g'>
                                         {
-                                            cartItems.length !== 0 &&
-                                            cartItems.map(item => parseInt(item.price.split(",").join("")) * item.quantity).reduce((total, value) => total + value, 0)
+                                            currentOrder?.orederList && currentOrder?.orederList.length !== 0 &&
+                                            currentOrder?.orederList.map(item => parseInt(item.price.split(",").join("")) * item.quantity).reduce((total, value) => total + value, 0)
                                         }
                                     </span></h3>
                                 </div>
 
-
-                                <br />
-                                <Link to={'/checkout'}>
-                                    <Button className='btn-g btn-lg'
-                                        onClick={() => {
-                                            context.setCartTotalAmount(cartItems.length !== 0 &&
-                                                cartItems.map(item => parseInt(item.price.split(",").join("")) * item.quantity).reduce((total, value) => total + value, 0))
-                                        }}
-                                    >Proceed To CheckOut</Button>
-                                </Link>
-
-
+                                
                             </div>
                         </div>
 

@@ -3,83 +3,63 @@ import React, { useState, useEffect } from 'react';
 
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { addToCart } from '../../Redux/Actions/main_action';
+import { useDispatch, useSelector } from 'react-redux';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 
 
 
 const QuantityBox = (props) => {
-    const [inputValue, setinputValue] = useState(1);
-    const [cartItems, setcartItems] = useState([]);
+    const [inputValue, setinputValue] = useState();
+    const dispatch = useDispatch()
+    const { cartItems } = useSelector((store) => store.reducer)
 
     useEffect(() => {
-        setcartItems(props.cartItems);
-        //setinputValue(props.item.quantity)
-    }, [props.cartItems])
+        setinputValue(props.item.quantity)
+    }, [cartItems])
 
+    const calculateOrderPrice = (Item) => {
+        return Number(Item.price) * Item.quantity;
+    };
 
-    const updateCart=(items)=>{
-        props.updateCart(items)
+    const updateCartData = (product) => {
+        const existingIndex = cartItems.findIndex(item => item.id === product.id);
+
+        if (existingIndex !== -1) {
+            const updatedCartItems = [...cartItems];
+            updatedCartItems[existingIndex].quantity++
+            setinputValue(inputValue+1)
+            updatedCartItems[existingIndex].subtotal = calculateOrderPrice(updatedCartItems[existingIndex]);
+            dispatch(addToCart(updatedCartItems));
+        }
+
     }
 
+    const removeToCartData = (product) => {
+        const existingIndex = cartItems.findIndex(item => item.id === product.id);
+        const updatedCartItems = [...cartItems];
+        if (updatedCartItems[existingIndex].quantity > 1) {
+            updatedCartItems[existingIndex].quantity--
+            setinputValue(inputValue-1)
+            updatedCartItems[existingIndex].subtotal = calculateOrderPrice(updatedCartItems[existingIndex]);
+        } else {
+            updatedCartItems.splice(existingIndex, 1);
+        }
+        dispatch(addToCart(updatedCartItems));
 
-
-    // const plus = () => {
-    //     setinputValue(inputValue + 1)
-    // }
-
-    // const minus = () => {
-    //     if (inputValue !== 1) {
-    //         setinputValue(inputValue - 1)
-    //     }
-    // }
-
-
+    }
 
     return (
-        <div className='addCartSection pt-4 pb-4 d-flex align-items-center '>
-            <div className='counterSec mr-3'>
-                <input type='number' value={inputValue} />
-                <span className='arrow plus'
-                   
-                   onClick={
-                    () => {
-                        setinputValue(inputValue + 1);
-                        const _cart = props.cartItems?.map((cartItem, key) => {
-                            return key === parseInt(props.index) ? { ...cartItem, quantity: inputValue+1 } : {...cartItem}
-                           
-                        });
-                            
-                        updateCart(_cart);
-                        setcartItems(_cart);
-                       
-                    }
-                }      
-                
-                ><KeyboardArrowUpIcon /></span>
 
-
-                <span className='arrow minus'
-                 onClick={
-                        () => {
-                            if (inputValue !== 1) {
-                                setinputValue(inputValue - 1)
-                            }
-                            
-                            const _cart = props.cartItems?.map((cartItem, key) => {
-                                return key === parseInt(props.index) ? { ...cartItem, quantity: cartItem.quantity !== 1 ? inputValue-1 : cartItem.quantity } : {...cartItem}
-                            });
-
-                          
-                            
-                            updateCart(_cart);
-                            setcartItems(_cart);
-
-
-
-                        }
-                    }
-                ><KeyboardArrowDownIcon /></span>
+        <div className='d-flex align-items-center justify-content-between mt-3 svg-icon-style'>
+            <div className='remove'>
+                <RemoveCircleIcon onClick={() => removeToCartData(props.item)} style={{ cursor: 'pointer' }} />
             </div>
-
+            <div>{inputValue || 0}</div>
+            <div className='add'>
+                <AddCircleIcon onClick={() => updateCartData(props.item)} style={{ cursor: 'pointer' }} />
+            </div>
         </div>
     )
 }

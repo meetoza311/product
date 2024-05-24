@@ -13,11 +13,13 @@ import { Button } from '@mui/material';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 
 import Product from '../../components/product';
 import axios from 'axios';
 import { MyContext } from '../../App';
-import { get_menuItem } from '../../Redux/Actions/main_action';
+import { addToCart, get_menuItem } from '../../Redux/Actions/main_action';
 import { useDispatch, useSelector } from 'react-redux';
 
 
@@ -27,6 +29,7 @@ const DetailsPage = (props) => {
 
     const [bigImageSize, setBigImageSize] = useState([1500, 1500]);
     const [smlImageSize, setSmlImageSize] = useState([150, 150]);
+    const [cart, setCart] = useState({});
 
     const [activeSize, setActiveSize] = useState(0);
 
@@ -53,7 +56,7 @@ const DetailsPage = (props) => {
     const [isAlreadyAddedInCart, setisAlreadyAddedInCart] = useState(false);
 
     const dispatch = useDispatch();
-    const { error, allMenuItems } = useSelector((store) => store.reducer);
+    const { error, allMenuItems, cartItems } = useSelector((store) => store.reducer);
 
     const [reviewFields, setReviewFields] = useState({
         review: '',
@@ -148,8 +151,43 @@ const DetailsPage = (props) => {
                         // })
                     })
             })
-    }, [id]);
+    }, [id, allMenuItems]);
 
+    console.log(allMenuItems)
+
+    const addToCartData = (product) => {
+        const existingIndex = cartItems.findIndex(item => item.id === product.id);
+        console.log(product, existingIndex)
+        if (existingIndex !== -1) {
+            const updatedCartItems = [...cartItems];
+            updatedCartItems[existingIndex].quantity++;
+            updatedCartItems[existingIndex].subtotal = calculateOrderPrice(updatedCartItems[existingIndex]);
+            dispatch(addToCart(updatedCartItems));
+        } else {
+            product.quantity = 1;
+            dispatch(addToCart([...cartItems, { ...product, subtotal: calculateOrderPrice(product) }]));
+        }
+    }
+
+
+    const calculateOrderPrice = (Item) => {
+        return Number(Item.price) * Item.quantity;
+    };
+
+
+    const removeToCartData = (product) => {
+        const existingIndex = cartItems.findIndex(item => item.id === product.id);
+        if (existingIndex !== -1) {
+            const updatedCartItems = [...cartItems];
+            if (updatedCartItems[existingIndex].quantity > 1) {
+                updatedCartItems[existingIndex].quantity--;
+                updatedCartItems[existingIndex].subtotal = calculateOrderPrice(updatedCartItems[existingIndex]);
+            } else {
+                updatedCartItems.splice(existingIndex, 1);
+            }
+            dispatch(addToCart(updatedCartItems));
+        }
+    }
 
 
 
@@ -218,12 +256,23 @@ const DetailsPage = (props) => {
 
     }
 
+    useEffect(() => {
+        if (cartItems.length) {
+            const existingItemIndex = cartItems.findIndex(item => item.id === currentProduct?.id);
+            if (existingItemIndex !== -1) {
+                setCart(cartItems[existingItemIndex])
+            } else {
+                setCart({})
+            }
+        } else {
+            setCart({})
+        }
+    }, [dispatch, cartItems, currentProduct]);
 
-
-    const addToCart = (item) => {
-        context.addToCart(item);
-        setIsadded(true);
-    }
+    // const addToCart = (item) => {
+    //     context.addToCart(item);
+    //     setIsadded(true);
+    // }
 
 
 
@@ -231,7 +280,7 @@ const DetailsPage = (props) => {
         <>
 
 
-
+            {/* 
             {
                 context.windowWidth < 992 && <Button className={`btn-g btn-lg w-100 filterBtn {isAlreadyAddedInCart===true && 'no-click'}`} onClick={() => addToCart(currentProduct)}><ShoppingCartOutlinedIcon />
                     {
@@ -239,7 +288,7 @@ const DetailsPage = (props) => {
                     }
                 </Button>
 
-            }
+            } */}
 
 
 
@@ -326,6 +375,17 @@ const DetailsPage = (props) => {
                             </div>
 
                             <p>{currentProduct.description}</p>
+                            {
+                                <div className='d-flex align-items-center justify-content-between mt-3 svg-icon-style' style={{ width: '20%' }}>
+                                    <div className='remove'>
+                                        <RemoveCircleIcon onClick={() => removeToCartData(currentProduct)} style={{ cursor: 'pointer' }} />
+                                    </div>
+                                    <div>{cart?.quantity || 0}</div>
+                                    <div className='add'>
+                                        <AddCircleIcon onClick={() => addToCartData(currentProduct)} style={{ cursor: 'pointer' }} />
+                                    </div>
+                                </div>
+                            }
 
                             {/* {
                                 currentProduct.weight !== undefined && currentProduct.weight.length !== 0 &&
@@ -385,14 +445,14 @@ const DetailsPage = (props) => {
 
                                 <div className='d-flex align-items-center'>
 
-                                    {
+                                    {/* {
                                         context.windowWidth > 992 && <Button className={`btn-g btn-lg addtocartbtn ${isAlreadyAddedInCart === true && 'no-click'}`} onClick={() => addToCart(currentProduct)}><ShoppingCartOutlinedIcon />
                                             {
                                                 isAdded === true || isAlreadyAddedInCart === true ? 'Added' : 'Add To Cart'
                                             }
                                         </Button>
 
-                                    }
+                                    } */}
                                     {/* <Button className=' btn-lg addtocartbtn  ml-3  wishlist btn-border'><FavoriteBorderOutlinedIcon /> </Button>
                                     <Button className=' btn-lg addtocartbtn ml-3 btn-border'><CompareArrowsIcon /></Button> */}
 
@@ -722,7 +782,7 @@ const DetailsPage = (props) => {
 
                     <br />
 
-                    <div className='relatedProducts homeProductsRow2  pt-5 pb-4'>
+                    {/* <div className='relatedProducts homeProductsRow2  pt-5 pb-4'>
                         <h2 class="hd mb-0 mt-0">Related products</h2>
                         <br className='res-hide' />
                         <Slider {...related} className='prodSlider'>
@@ -741,7 +801,7 @@ const DetailsPage = (props) => {
                             }
 
                         </Slider>
-                    </div>
+                    </div> */}
 
 
                 </div>

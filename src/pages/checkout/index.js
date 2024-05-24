@@ -9,6 +9,8 @@ import { MyContext } from '../../App';
 import { useNavigate } from 'react-router-dom';
 
 import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { addOrder, addToCart } from '../../Redux/Actions/main_action';
 
 const Checkout = () => {
 
@@ -19,19 +21,34 @@ const Checkout = () => {
         phoneNumber: ''
     })
 
+    const { cartItems, detailOrders } = useSelector((store) => store.reducer)
+
     const context = useContext(MyContext);
     const history = useNavigate();
+    const dispatch = useDispatch();
 
 
 
     const placeOrder = () => {
+
+        if (!cartItems.length) {
+            alert("No items selected");
+            return false;
+        }
 
         if (formFields.name === "" || formFields.address == "" || formFields.pincode == "" || formFields.phoneNumber == "") {
             alert("All fields Required");
             return false;
         }
 
+        const phoneNumberRegex = /^\d{7,12}$/;
+        if (!phoneNumberRegex.test(formFields.phoneNumber)) {
+            alert("Phone number is invalid");
+            return false;
+        }
 
+
+        let arr = [...detailOrders]
 
         const addressInfo = {
             name: formFields.name,
@@ -45,58 +62,62 @@ const Checkout = () => {
                     day: "2-digit",
                     year: "numeric",
                 }
-            )
+            ),
+            orederList: cartItems
         }
+        arr.push(addressInfo)
+        dispatch(addOrder(arr))
+        dispatch(addToCart([]))
+        history('/')
+
+
+        // var options = {
+        //     key: "",
+        //     key_secret: "",
+        //     amount: parseInt(context.cartTotalAmount * 100),
+        //     currency: "INR",
+        //     order_receipt: 'order_rcptid_' + formFields.name,
+        //     name: "E-Bharat",
+        //     description: "for testing purpose",
+        //     handler: function (response) {
+
+        //         // console.log(response)
+
+
+        //         const paymentId = response.razorpay_payment_id
+        //         // store in firebase 
+        //         const orderInfo = {
+        //             cartItems: context.cartItems,
+        //             addressInfo: addressInfo,
+        //             date: new Date().toLocaleString(
+        //                 "en-US",
+        //                 {
+        //                     month: "short",
+        //                     day: "2-digit",
+        //                     year: "numeric",
+        //                 }
+        //             ),
+        //             email: localStorage.getItem("userEmail"),
+        //             userid:localStorage.getItem("userId"),
+        //             paymentId
+        //         }
 
 
 
-        var options = {
-            key: "",
-            key_secret: "",
-            amount: parseInt(context.cartTotalAmount * 100),
-            currency: "INR",
-            order_receipt: 'order_rcptid_' + formFields.name,
-            name: "E-Bharat",
-            description: "for testing purpose",
-            handler: function (response) {
 
-                // console.log(response)
+        //         history('/')
 
 
-                const paymentId = response.razorpay_payment_id
-                // store in firebase 
-                const orderInfo = {
-                    cartItems: context.cartItems,
-                    addressInfo: addressInfo,
-                    date: new Date().toLocaleString(
-                        "en-US",
-                        {
-                            month: "short",
-                            day: "2-digit",
-                            year: "numeric",
-                        }
-                    ),
-                    email: localStorage.getItem("userEmail"),
-                    userid:localStorage.getItem("userId"),
-                    paymentId
-                }
-                  
-                
+        //     },
+
+        //     theme: {
+        //         color: "#3399cc"
+        //     }
+        // };
 
 
-                history('/')
-
-
-            },
-
-            theme: {
-                color: "#3399cc"
-            }
-        };
-
-
-        var pay = new window.Razorpay(options);
-        pay.open();
+        // var pay = new window.Razorpay(options);
+        // pay.open();
     }
 
 

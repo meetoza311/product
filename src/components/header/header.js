@@ -37,7 +37,6 @@ const Header = (props) => {
     const [isOpenDropDown, setisOpenDropDown] = useState(false);
     const [isOpenAccDropDown, setisOpenAccDropDown] = useState(false);
     
-    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [isopenSearch, setOpenSearch] = useState(false);
     const [isOpenNav, setIsOpenNav] = useState(false);
 
@@ -152,7 +151,7 @@ console.log(cartItems.length)
                             <div className='col-sm-2 part1 d-flex align-items-center'>
                                 <Link to="/"><img src={Logo} className='logo' /></Link>
                                 {
-                                    windowWidth < 992 &&
+                                    context.windowWidth < 992 &&
                                     <div className='ml-auto d-flex align-items-center'>
 
 
@@ -195,7 +194,7 @@ console.log(cartItems.length)
                                         } */}
 
                                     {
-                                        windowWidth < 992 && <div class="closeSearch" onClick={closeSearch}><ArrowBackIosIcon /></div>
+                                        context.windowWidth < 992 && <div class="closeSearch" onClick={closeSearch}><ArrowBackIosIcon /></div>
                                     }
                                     <Select data={categories} placeholder={'All Categories'} icon={false} />
 

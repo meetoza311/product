@@ -15,7 +15,6 @@ const Nav = (props) => {
 
     const [navData, setNavData] = useState([]);
     const [isOpenNav, setIsOpenNav] = useState(false);
-    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [openDropdownMenu, setDropdownMenu] = useState(false);
     const [openDropdownMenuIndex, setDropdownMenuIndex] = useState(null);
 
@@ -63,15 +62,19 @@ const Nav = (props) => {
                                     <li className='list-inline-item'>
                                         <Button><Link to={'/'} onClick={props.closeNav}>Home</Link></Button>
                                     </li>
+
+                                    <li className='list-inline-item'>
+                                        <Button><Link to={'/order'} onClick={props.closeNav}>Order</Link></Button>
+                                    </li>
                                     
                                     {
                                         navData.length !== 0 &&
                                         navData.map((item, index) => {
                                             return (
                                                 <li className='list-inline-item' key={index}>
-                                                    <Button onClick={()=>openDropdownFun(index)}><a href={`${windowWidth>992 ? `/cat/${item.cat_name.toLowerCase()}` : '#'}`}
+                                                    <Button onClick={()=>openDropdownFun(index)}><Link to={`${context.windowWidth>992 ? `/cat/${item.path_name.toLowerCase()}` : '#'}`}
                                                         onClick={() => sessionStorage.setItem('cat', item.cat_name.toLowerCase())}
-                                                    >{item.cat_name}  <KeyboardArrowDownIcon  className={`${openDropdownMenu===true && openDropdownMenuIndex===index && 'rotateIcon'}`}/></a></Button>
+                                                    >{item.cat_name}  <KeyboardArrowDownIcon  className={`${openDropdownMenu===true && openDropdownMenuIndex===index && 'rotateIcon'}`}/></Link></Button>
                                                     {
                                                         item.items.length !== 0 &&
                                                         <div className={`dropdown_menu ${openDropdownMenu===true && openDropdownMenuIndex===index && 'open'}`}>
@@ -82,12 +85,12 @@ const Nav = (props) => {
                                                                         return (
                                                                             <li key={index_}>
                                                                                 <Button onClick={props.closeNav}>
-                                                                                    <a href={`/cat/${item.path_name?.toLowerCase()}/${item_.productName.replace(/\s/g, '-')?.toLowerCase()}`}
+                                                                                    <Link to={`/product/${item_.id}`}
                                                                                         onClick={() => sessionStorage.setItem('cat', item.productName?.toLowerCase())}>
                                                                                         {
                                                                                             item_.productName
                                                                                         }
-                                                                                    </a>
+                                                                                    </Link>
                                                                                 </Button>
                                                                             </li>
                                                                         )
@@ -114,7 +117,7 @@ const Nav = (props) => {
                                                     allMenuItems?.map((item, index) => {
                                                         return (
                                                             <div className='col'>
-                                                                <a href={`/cat/${item.cat_name.toLowerCase()}`}> <h4 className='text-g text-capitalize'>{item.cat_name}</h4></a>
+                                                                <Link to={`/cat/${item.cat_name.toLowerCase()}`}> <h4 className='text-g text-capitalize'>{item.cat_name}</h4></Link>
                                                                 {
                                                                     item.items.length !== 0 &&
                                                                     <ul className='mt-4 mb-0'>
