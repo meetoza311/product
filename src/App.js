@@ -155,7 +155,7 @@ function App() {
   return (
     
     data.productData.length !== 0 &&
-    <BrowserRouter>
+    <BrowserRouter basename='/product'>
       <MyContext.Provider value={value}>
         {
           isLoading===true && <div className='loader'><img src={Loader}/></div>
@@ -163,7 +163,7 @@ function App() {
 
         <Header/>
         <Routes>
-          <Route exact={true} path="/" element={<Home />} />
+          <Route exact={true} path="/product" element={<Home />} />
           <Route exact={true} path="/cat/:id" element={<Listing  single={true} />} />
           {/* <Route exact={true} path="/cat/:id/:id" element={<Listing data={data.productData} single={false} />} /> */}
           <Route exact={true} path="/product/:id" element={<DetailsPage  />} />
